@@ -14,10 +14,32 @@ void *work(void *arg)
 	// *** HIER EUER CODE ***
     for (int i = 0; i < EXCAVATIONS_PER_ARCHAEOLOGIST; ++i) {
         ExcavationStep excavationStep = get_next_step();
-        sem_wait(&tools[excavationStep.toolIndex].sem);
+        if (pthread_mutex_lock(&lock)){
+            fprintf(stderr, "pthread_mutex_lock failed");
+            exit(1);
+        }
+        if (sem_wait(&tools[excavationStep.toolIndex].sem)){
+            fprintf(stderr, "sem_wait failed");
+            exit(1);
+        }
+        if (pthread_mutex_unlock(&lock)){
+            fprintf(stderr, "pthread_mutex_unlock failed");
+            exit(1);
+        }
         sleep(excavationStep.time);
         if (excavationStep.finished){
-            sem_post(&tools[excavationStep.toolIndex].sem);
+            if (pthread_mutex_lock(&lock)){
+                fprintf(stderr, "pthread_mutex_lock failed");
+                exit(1);
+            }
+            if(sem_post(&tools[excavationStep.toolIndex].sem)){
+                fprintf(stderr, "sem_post failed");
+                exit(1);
+            }
+            if (pthread_mutex_unlock(&lock)){
+                fprintf(stderr, "pthread_mutex_unlock failed");
+                exit(1);
+            }
         }
     }
 
