@@ -1,3 +1,10 @@
 1.  Betriebsmittel: semaphore
     Eigenschaft: Widerverwendbar
-2.  Die Verklemmung tritt auf, wenn viele Arch
+    
+2.  Die Verklemmung tritt auf, wenn viele Archäologen gleiche Geräte abholen. Falls eine Art Gerät alles abgeholt werden, und keinen anderen Archologe seines vorhandenes Gerät zurückgibt, kann die Archologen, die des Gerät benutzen möchten, nur warten.
+    erfüllt: circular wait
+    
+3.  3 b) Vorteile: andere Archologen kann ihre Aufgabe perfekt schaffen
+         Nachteile: das "Opfer" muss großen Aufwand tragen
+    3 c) Vorteile: kann man vorher plannen, und wenig Konflikt auftreten
+         Nachteile: wenn der Konflikt auftritt, muss man sehr lang warten.
