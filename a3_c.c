@@ -12,6 +12,11 @@ void *work(void *arg)
 	printf("[A%d] Ich bin bereit zu Graben!\n", my_num);
 
 	// *** HIER EUER CODE ***
+	ExcavationStep plan[100];
+    for (int i = 0; i < EXCAVATIONS_PER_ARCHAEOLOGIST; ++i) {
+        plan[i] = get_next_step();
+    }
+
     int currentToolsIndex[EXCAVATIONS_PER_ARCHAEOLOGIST];
     for (int i = 0; i < EXCAVATIONS_PER_ARCHAEOLOGIST; ++i) {
         ExcavationStep excavationStep = get_next_step();
