@@ -3,6 +3,7 @@
 #include <unistd.h>
 // Zusätzliche Header-Dateien hier!
 #include <time.h>
+#include <errno.h>
 
 #include "vorgabe.h"
 
@@ -16,14 +17,43 @@ void *work(void *arg)
     int currentToolsIndex[EXCAVATIONS_PER_ARCHAEOLOGIST];
     for (int i = 0; i < EXCAVATIONS_PER_ARCHAEOLOGIST; ++i) {
         ExcavationStep excavationStep = get_next_step();
-        if (sem_wait(&tools[excavationStep.toolIndex].sem)){
-            fprintf(stderr, "sem_wait failed");
-            exit(1);
+        // pruefen, ob das Werkzeug schon vorhanden
+        bool toolAvalible = false;
+        for (int j = 0; j < i; ++j) {
+            if(currentToolsIndex[j] == excavationStep.toolIndex){
+                toolAvalible = true;
+                currentToolsIndex[i] = currentToolsIndex[j];
+                currentToolsIndex[j] = TOOL_COUNT;
+                break;
+            }
         }
-        currentToolsIndex[i] = excavationStep.toolIndex;
+        if(!toolAvalible){
+            struct timespec waittime;
+            if(clock_gettime(CLOCK_REALTIME, &waittime)) {
+                perror("clock_gettime");
+                exit(1);
+            }
+            waittime.tv_sec += 10;
+            if (sem_timedwait(&tools[excavationStep.toolIndex].sem, &waittime)){
+                if(errno==ETIMEDOUT) {
+                    --i;
+                    // Die erfolglose Ausgrabung soll nicht zu den erledigten Ausgrabungen zaehlen.
+                    for (int j = 0; j < i; ++j) {
+                        sem_post(&tools[currentToolsIndex[j]].sem);
+                        currentToolsIndex[j] = TOOL_COUNT;
+                        sleep(1);
+                    }
+                }
+                else {
+                    fprintf(stderr, "sem_wait failed");
+                    exit(1);
+                }
+            }
+            currentToolsIndex[i] = excavationStep.toolIndex;
+        }
         sleep(excavationStep.time);
         if (excavationStep.finished){
-            if(sem_post(&tools[excavationStep.toolIndex].sem)){
+            if(sem_post(&tools[currentToolsIndex[i]].sem)){
                 fprintf(stderr, "sem_post failed");
                 exit(1);
             }
@@ -33,13 +63,14 @@ void *work(void *arg)
     }
     for (int i = 0; i < EXCAVATIONS_PER_ARCHAEOLOGIST; ++i) {
         if(currentToolsIndex[i]<TOOL_COUNT){
-            if(sem_post(&tools[excavationStep.toolIndex].sem)){
+            if(sem_post(&tools[currentToolsIndex[i]].sem)){
                 fprintf(stderr, "sem_post failed");
                 exit(1);
             }
+            currentToolsIndex[i] = TOOL_COUNT;
         }
     }
-}
+
 
 
 	printf("Alle Ausgrabungen von [A%d] sind fertig\n", my_num);
