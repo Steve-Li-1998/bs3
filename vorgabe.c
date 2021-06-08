@@ -51,12 +51,6 @@ int main(void) {
 			fprintf(stderr, "pthread_create failed");
 			exit(1);
 		}
-		struct timespec waittime;
-		waittime.tv_nsec = 100L * 1000000L;
-		int res;
-		do{
-			 res = nanosleep(&waittime, &waittime);
-		} while(res && errno == EINTR);
 	}
 
 	// Ausgrabungs-Threads einsammeln
