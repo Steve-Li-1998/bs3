@@ -4,6 +4,7 @@
 // Zusätzliche Header-Dateien hier!
 #include <time.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include "vorgabe.h"
 
